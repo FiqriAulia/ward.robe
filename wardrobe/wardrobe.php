@@ -1,47 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>otterplayingincoldwater</title>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      height: 100vh;
-      overflow-y: scroll;
-    }
+<?php
+// Easter egg: klik judul "Wardrobe" di home 3x.
+define('PUBLIC_PAGE', true);
+require __DIR__ . '/inc/bootstrap.php';
 
-    ::-webkit-scrollbar {
-      width: 0px; /* Adjust as needed */
-      height: 0px; /* Adjust as needed */
-    }
+$changelog = file_get_contents(APP_ROOT . '/asset/txt/changelog.txt');
 
-    .egg {
-      max-width: 80%;
-      padding: 20px;
-    }
-  </style>
-</head>
-<body>
+page_start('Wardrobe', 'egg-page');
+?>
     <div class="egg">
-    <?php
-    $encrypted_file = "asset/txt/DO NOT DELETE.txt";
-    $encrypted_content = file_get_contents($encrypted_file);
-    list($iv, $encrypted_text) = explode(':', $encrypted_content);
-    $iv = base64_decode($iv);
-    $password = "otterplayingincoldwater";
-    $method = "aes-256-cbc";
-    $key = hash('sha256', $password, true);
-
-    $decrypted_text = openssl_decrypt($encrypted_text, $method, $key, 0, $iv);
-    echo "<pre>";
-    echo htmlspecialchars($decrypted_text);
-    echo "</pre>";
-    ?>
+        <pre><?= e($changelog) ?></pre>
     </div>
-</body>
-</html>
-
+<?php page_end(); ?>

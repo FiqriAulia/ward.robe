@@ -1,55 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
+<?php
+require __DIR__ . '/../inc/bootstrap.php';
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wardrobe</title>
-    <link rel="stylesheet" href="../styles.css">
-    <script src="../jquery/jquery-3.7.1.min.js"></script>
-    <script src="../jquery/script.js"></script>
-</head>
+$controller = new c_wardrobe();
+$type = $controller->requireType($_GET['type'] ?? null);
+$label = c_wardrobe::label($type);
+$form = take_form();
+$old = $form['old'];
 
-<body>
-<header class="header-container">
-    <form action="../main/v_input.php" method="get" class="form-back">
-        <input class="back" type="submit" value="Back">
-    </form>
-    <h3><?php echo $_POST['metode']; ?></h3>
-</header>
-
+page_start();
+page_header('main/v_input.php', $label);
+?>
     <div class="center">
         <div class="menukiri">
-            <div class="box"><!-- Wizart -->
-                <div class="wiz">
-                    <div class="overlap-group">
-                        <div class="rectangle"></div>
-                        <main>
-                            <img class="wake" id="anchor" src="../asset/wake.png" />
-                            <div id="eyes">
-                                <img class="eye" src="../asset/Mata.png" alt="mata" style="top: 240px;left: 35px;" />
-                                <img class="eye" src="../asset/Mata.png" alt="mata" style="top: 240px;left: -52px;" />
-                            </div>
-                        </main>
-                    </div>
-                </div>
-            </div>
+            <?php wizard_awake(); ?>
         </div>
         <div class="menukanan">
-            <form action="process.php" method="post" class="container" enctype="multipart/form-data">
-                <input type="hidden" name="metode" value="<?php echo $_POST['metode']; ?>">
-                Nomor : <input type="text" class="nama" name="nomor" placeholder="Anda dapat memasukkan angka bebas" required>
-                Nama : <input type="text" class="nama" name="nama" placeholder="Dapat berupa merk <?php echo $_POST['metode']; ?> " required>
-                Deskripsi : <textarea name="deskripsi" class="deskripsi" cols="30" rows="10"
-                    placeholder="Isi deskripsi ini dengan sesuatu yang unik dari <?php echo $_POST['metode']; ?> tesebut" required></textarea>
+            <form action="<?= e(url('v_input/process.php')) ?>" method="post" class="container" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <input type="hidden" name="type" value="<?= e($type) ?>">
+                <?php error_list($form['errors']); ?>
+                <label for="nama">Nama :</label>
+                <input type="text" class="nama" id="nama" name="nama" maxlength="255" required
+                    value="<?= e($old['nama'] ?? '') ?>" placeholder="Dapat berupa merk <?= e($label) ?>">
+                <label for="deskripsi">Deskripsi :</label>
+                <textarea id="deskripsi" name="deskripsi" class="deskripsi" cols="30" rows="10" maxlength="5000" required
+                    placeholder="Isi deskripsi ini dengan sesuatu yang unik dari <?= e($label) ?> tersebut"><?= e($old['deskripsi'] ?? '') ?></textarea>
 
-                <div style="display: flex; justify-content: space-between;">
-                    <input type="file" class="file" name="file" required>
+                <div class="form-actions">
+                    <input type="file" class="file" name="file" accept="image/jpeg,image/png,image/gif,image/webp" required>
                     <input type="submit" value="Submit">
                 </div>
             </form>
         </div>
     </div>
-</body>
-
-</html>
+<?php page_end(); ?>

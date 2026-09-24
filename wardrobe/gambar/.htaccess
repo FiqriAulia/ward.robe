@@ -1,0 +1,15 @@
+# Folder ini berisi foto upload pengguna: jangan pernah jalankan script di sini.
+Options -Indexes -ExecCGI
+RemoveHandler .php .phtml .phar .pht
+RemoveType .php .phtml .phar .pht
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+
+<FilesMatch "(?i)\.(php\d*|phtml|phar|pht|cgi|pl|py|sh|html?|svg)$">
+    Require all denied
+</FilesMatch>

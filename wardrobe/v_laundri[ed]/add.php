@@ -1,88 +1,29 @@
 <?php
-session_start();
-include_once("../c_wardrobe.php");
+// Langkah 1 dari 2: pilih baju yang masuk laundry.
+require __DIR__ . '/../inc/bootstrap.php';
 
 $controller = new c_wardrobe();
-$rows = $controller->displayBaju();
+$rows = array_values(array_filter($controller->getLaundryCandidates(), fn($row) => $row['jenis'] === 'baju'));
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['button']) && $_POST['button'] === 'add') {
-        if (isset($_POST['baju'])) {
-            $_SESSION['selected_baju'] = $_POST['baju'];
-        }
-
-        header("Location: add-2.php");
-        exit();
-    }
-}
+page_start();
+page_header('main/v_laundri[ed].php', 'Laundri[ed]');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wardrobe</title>
-    <link rel="stylesheet" href="../styles.css">
-    <script src="../jquery/jquery-3.7.1.min.js"></script>
-    <script src="../jquery/script.js"></script>
-</head>
-
-<body>
-    <header class="header-container">
-        <form action="../v_laundri[ed].php" method="get" class="form-back">
-            <input class="back" type="submit" value="Back">
-        </form>
-        <h3>Laundri[ed]</h3>
-        <form action="" method="post">
-    </header>
     <div class="center">
-        <div class="tengah">
+        <form class="tengah" action="<?= e(url('v_laundri[ed]/add-2.php')) ?>" method="post">
+            <?= csrf_field() ?>
             <div class="header-container">
                 <h4>Pilih Baju mana yang di laundry</h4>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th class="small"></th>
-                        <th class="small">No</th>
-                        <th>Nama</th>
-                        <th>Deskripsi</th>
-                        <th>Foto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $no = 1;
-                    foreach ($rows as $rowItem):
-                        ?>
-                        <tr>
-                            <td class="small">
-                                <input type="checkbox" name="baju[]" value="<?= $rowItem['BAJU_ID'] ?>">
-                            </td>
-                            <td class="small">
-                                <?= $no ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['BAJU_NAMA'] ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['BAJU_DESKRIPSI'] ?>
-                            </td>
-                            <td class="fotoble">
-                                <img class="foto" src="../gambar/<?= $rowItem['BAJU_FOTO'] ?>" alt="">
-                            </td>
-                        </tr>
-                        <?php $no += 1; ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <?php
+            item_table($rows, [
+                'jenis' => false,
+                'checkbox' => ['items[]', fn(array $row) => $row['jenis'] . ':' . $row['id']],
+                'empty' => 'Tidak ada baju yang bisa dimasukkan ke laundry.',
+            ]);
+            ?>
             <div class="header-container">
-                <input type="submit" name="button" value="add" class="back" />
-                </form>
+                <input type="submit" value="Lanjut" class="back">
             </div>
-        </div>
+        </form>
     </div>
-</body>
-
-</html>
+<?php page_end(); ?>

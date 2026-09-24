@@ -312,6 +312,7 @@ main {
 }
 
 .container input[type="text"],
+.container input[type="password"],
 .container textarea[class="deskripsi"],
 .container input[type="file"] {
     width: 100%;
@@ -332,4 +333,112 @@ main {
 
 .container input[type="submit"]:hover {
     background-color: #555555;
+}
+
+/* ---- Link yang tampil seperti heading/tombol ---- */
+
+h2 a,
+h4 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a.button {
+    display: block;
+    color: whitesmoke;
+    text-decoration: none;
+}
+
+a.button:hover {
+    background-color: #555555;
+}
+
+.logout {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+}
+
+/* ---- Pesan ---- */
+
+.flash {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    padding: 10px 20px;
+    border-radius: 20px;
+    background-color: #333533;
+    color: whitesmoke;
+}
+
+.errors {
+    margin: 0 0 10px;
+    padding: 10px 10px 10px 30px;
+    border-radius: 10px;
+    background-color: #8b1e1e;
+    color: whitesmoke;
+}
+
+.message {
+    max-width: 600px;
+    text-align: center;
+}
+
+.message a {
+    color: inherit;
+}
+
+tr.empty td {
+    text-align: center;
+    font-style: italic;
+}
+
+/* ---- Form ---- */
+
+.container label {
+    display: block;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.current-photo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lazy {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---- Easter egg ---- */
+
+body.egg-page {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+    overflow-y: scroll;
+    scrollbar-width: none;
+}
+
+body.egg-page::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.egg {
+    max-width: 80%;
+    padding: 20px;
 }

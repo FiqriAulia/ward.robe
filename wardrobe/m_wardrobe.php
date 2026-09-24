@@ -1,216 +1,164 @@
 <?php
-include_once "koneksi.php";
+// Model: semua akses database ada di sini.
 
 class m_wardrobe
 {
-    private $mysqli;
+    /**
+     * Deskripsi tiap jenis pakaian. Nama tabel/kolom di sini satu-satunya yang
+     * boleh disisipkan langsung ke SQL; nilai dari user selalu lewat parameter.
+     */
+    public const TYPES = [
+        'baju' => [
+            'label' => 'Baju',
+            'table' => 'baju',
+            'id' => 'BAJU_ID',
+            'nama' => 'BAJU_NAMA',
+            'deskripsi' => 'BAJU_DESKRIPSI',
+            'foto' => 'BAJU_FOTO',
+            'laundry' => 'LAUNDRY_BAJU_ID',
+            'proc' => 'Baju',
+        ],
+        'celana' => [
+            'label' => 'Celana',
+            'table' => 'celana',
+            'id' => 'CELANA_ID',
+            'nama' => 'CEL_NAMA',
+            'deskripsi' => 'CEL_DESKRIPSI',
+            'foto' => 'CEL_FOTO',
+            'laundry' => 'LAUNDRY_CEL_ID',
+            'proc' => 'Celana',
+        ],
+        'aksesoris' => [
+            'label' => 'Aksesoris',
+            'table' => 'aksesoris',
+            'id' => 'AKSESORIS_ID',
+            'nama' => 'ACC_NAMA',
+            'deskripsi' => 'ACC_DESKRIPSI',
+            'foto' => 'ACC_FOTO',
+            'laundry' => 'LAUNDRY_ACC_ID',
+            'proc' => 'Aksesoris',
+        ],
+    ];
 
-    public function __construct()
+    private const DUPLICATE_KEY = 1062;
+
+    /** Semua pakaian; kolom: jenis, id, nama, deskripsi, foto. */
+    public function getAllData(): array
     {
-        $this->mysqli = new mysqli(HOST, USER, PASSWORD, DATABASE);
-        if ($this->mysqli->connect_error) {
-            die("Connection failed: " . $this->mysqli->connect_error);
+        return db_rows('CALL DisplayAllData()');
+    }
+
+    public function getAllLaundryData(): array
+    {
+        return db_rows('CALL GetAllLaundryData()');
+    }
+
+    public function dressMe(): array
+    {
+        return db_rows('CALL Dress_Me()');
+    }
+
+    /** Semua pakaian satu jenis, dengan kolom yang sama seperti getAllData(). */
+    public function getByType(string $type): array
+    {
+        return db_rows($this->selectSql($type) . ' ORDER BY nama');
+    }
+
+    public function find(string $type, int $id): ?array
+    {
+        $t = self::TYPES[$type];
+        $rows = db_rows($this->selectSql($type) . " WHERE {$t['id']} = ?", 'i', [$id]);
+        return $rows[0] ?? null;
+    }
+
+    public function insert(string $type, string $nama, string $deskripsi, string $foto): void
+    {
+        $proc = self::TYPES[$type]['proc'];
+        db_rows("CALL Insert{$proc}(?, ?, ?)", 'sss', [$nama, $deskripsi, $foto]);
+    }
+
+    public function update(string $type, int $id, string $nama, string $deskripsi, string $foto): void
+    {
+        $proc = self::TYPES[$type]['proc'];
+        db_rows("CALL Edit{$proc}(?, ?, ?, ?)", 'isss', [$id, $nama, $deskripsi, $foto]);
+    }
+
+    /** Menghapus pakaian; baris laundry-nya ikut terhapus (ON DELETE CASCADE). */
+    public function delete(string $type, int $id): void
+    {
+        $proc = self::TYPES[$type]['proc'];
+        db_rows("CALL DeleteFrom{$proc}(?)", 'i', [$id]);
+    }
+
+    /** Pakaian yang belum ada di laundry, semua jenis. */
+    public function getLaundryCandidates(): array
+    {
+        $parts = [];
+        foreach (self::TYPES as $type => $t) {
+            $parts[] = $this->selectSql($type)
+                . " WHERE NOT EXISTS (SELECT 1 FROM laundry l WHERE l.{$t['laundry']} = {$t['table']}.{$t['id']})";
+        }
+        return db_rows(implode(' UNION ALL ', $parts) . ' ORDER BY jenis, nama');
+    }
+
+    /** @return bool false bila pakaian itu sudah ada di laundry. */
+    public function addToLaundry(string $type, int $id): bool
+    {
+        $params = [
+            $type === 'baju' ? $id : null,
+            $type === 'celana' ? $id : null,
+            $type === 'aksesoris' ? $id : null,
+        ];
+        try {
+            db_rows('CALL InsertIntoLaundry(?, ?, ?)', 'iii', $params);
+            return true;
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() === self::DUPLICATE_KEY) {
+                return false;
+            }
+            throw $e;
         }
     }
 
-    public function getAllData()
+    public function removeFromLaundry(int $laundryId): void
     {
-        $result = $this->mysqli->query('CALL DisplayAllData();');
-        $rows = array();
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return $rows;
+        db_rows('CALL DeleteFromLaundry(?)', 'i', [$laundryId]);
     }
 
-    public function getAllLaundryData()
+    public function getSetting(string $key): ?string
     {
-        $result = $this->mysqli->query('CALL GetAllLaundryData();');
-        $rows = array();
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return $rows;
+        $rows = db_rows('SELECT setting_value FROM app_settings WHERE setting_key = ?', 's', [$key]);
+        return $rows[0]['setting_value'] ?? null;
     }
 
-    public function DressMe()
+    public function setSetting(string $key, string $value): void
     {
-        $result = $this->mysqli->query('CALL Dress_Me();');
-        $rows = array();
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return $rows;
+        db_rows(
+            'INSERT INTO app_settings (setting_key, setting_value) VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)',
+            'ss',
+            [$key, $value]
+        );
     }
 
-    public function displayCelana()
+    /** Simpan setting hanya kalau belum ada. @return bool true bila tersimpan. */
+    public function addSettingIfMissing(string $key, string $value): bool
     {
-        $result = $this->mysqli->query('select*from wardrobe.celana;');
-        $rows = array();
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return $rows;
-    }
-
-    public function displayBaju()
-    {
-        $result = $this->mysqli->query('select*from wardrobe.baju;');
-        $rows = array();
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return $rows;
-    }
-
-    public function displayAksesoris()
-    {
-        $result = $this->mysqli->query('select*from wardrobe.aksesoris;');
-        $rows = array();
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return $rows;
-    }
-
-    public function insertCelana($CELANA_ID, $CEL_NAMA, $CEL_DESKRIPSI, $CEL_FOTO)
-    {
-        $stmt = $this->mysqli->prepare("CALL InsertCelana(?,?,?,?)");
-        $stmt->bind_param("ssss", $CELANA_ID, $CEL_NAMA, $CEL_DESKRIPSI, $CEL_FOTO);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function insertBaju($BAJU_ID, $BAJU_NAMA, $BAJU_DESKRIPSI, $BAJU_FOTO)
-    {
-        $stmt = $this->mysqli->prepare("CALL InsertBaju(?,?,?,?)");
-        $stmt->bind_param("ssss", $BAJU_ID, $BAJU_NAMA, $BAJU_DESKRIPSI, $BAJU_FOTO);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function insertAksesoris($AKSESORIS_ID, $ACC_NAMA, $ACC_DESKRIPSI, $ACC_FOTO)
-    {
-        $stmt = $this->mysqli->prepare("CALL InsertAksesoris(?,?,?,?)");
-        $stmt->bind_param("ssss", $AKSESORIS_ID, $ACC_NAMA, $ACC_DESKRIPSI, $ACC_FOTO);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-
-    public function insertIntoLaundry($LAUNDRY_ID, $BAJU_ID, $CELANA_ID)
-    {
-        $stmt = $this->mysqli->prepare("CALL InsertIntoLaundry(?,?,?)");
-        $stmt->bind_param("sss", $LAUNDRY_ID, $BAJU_ID, $CELANA_ID);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function editCelana($CELANA_ID, $CEL_NAMA, $CEL_DESKRIPSI, $CEL_FOTO)
-    {
-        $stmt = $this->mysqli->prepare("CALL EditCelana(?,?,?,?)");
-        $stmt->bind_param("ssss", $CELANA_ID, $CEL_NAMA, $CEL_DESKRIPSI, $CEL_FOTO);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function editBaju($BAJU_ID, $BAJU_NAMA, $BAJU_DESKRIPSI, $BAJU_FOTO)
-    {
-        $stmt = $this->mysqli->prepare("CALL EditBaju(?,?,?,?)");
-        $stmt->bind_param("ssss", $BAJU_ID, $BAJU_NAMA, $BAJU_DESKRIPSI, $BAJU_FOTO);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function editAksesoris($AKSESORIS_ID, $ACC_NAMA, $ACC_DESKRIPSI, $ACC_FOTO)
-    {
-        $stmt = $this->mysqli->prepare("CALL EditBaju(?,?,?,?)");
-        $stmt->bind_param("ssss", $AKSESORIS_ID, $ACC_NAMA, $ACC_DESKRIPSI, $ACC_FOTO);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function deleteFromLaundry($LAUNDRY_ID)
-    {
-        $stmt = $this->mysqli->prepare("CALL DeleteFromLaundry(?)");
-        $stmt->bind_param("s", $LAUNDRY_ID);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function deleteFromBaju($BAJU_ID)
-    {
-        $stmt = $this->mysqli->prepare("CALL DeleteFromBaju(?)");
-        $stmt->bind_param("s", $BAJU_ID);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function deleteFromCelana($CELANA_ID)
-    {
-        $stmt = $this->mysqli->prepare("CALL DeleteFromCelana(?)");
-        $stmt->bind_param("s", $CELANA_ID);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function deleteFromAksesoris($AKSESORIS_ID)
-    {
-        $stmt = $this->mysqli->prepare("CALL DeleteFromAksesoris(?)");
-        $stmt->bind_param("s", $AKSESORIS_ID);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    public function getBajuById($BAJU_ID)
-    {
-        $stmt = $this->mysqli->prepare("SELECT * FROM wardrobe.baju WHERE BAJU_ID = ?");
-        $stmt->bind_param("s", $BAJU_ID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows === 1) {
-            $row = $result->fetch_assoc();
-            $stmt->close();
-            return $row;
-        } else {
-            $stmt->close();
-            return null;
+        try {
+            db_rows('INSERT INTO app_settings (setting_key, setting_value) VALUES (?, ?)', 'ss', [$key, $value]);
+            return true;
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() === self::DUPLICATE_KEY) {
+                return false;
+            }
+            throw $e;
         }
     }
 
-    public function getCelanaById($CELANA_ID)
+    private function selectSql(string $type): string
     {
-        $stmt = $this->mysqli->prepare("SELECT * FROM wardrobe.celana WHERE CELANA_ID = ?");
-        $stmt->bind_param("s", $CELANA_ID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows === 1) {
-            $row = $result->fetch_assoc();
-            $stmt->close();
-            return $row;
-        } else {
-            $stmt->close();
-            return null;
-        }
-    }
-
-    public function getAccById($ACC_ID)
-    {
-        $stmt = $this->mysqli->prepare("SELECT * FROM wardrobe.aksesoris WHERE AKSESORIS_ID = ?");
-        $stmt->bind_param("s", $ACC_ID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows === 1) {
-            $row = $result->fetch_assoc();
-            $stmt->close();
-            return $row;
-        } else {
-            $stmt->close();
-            return null;
-        }
+        $t = self::TYPES[$type];
+        return "SELECT '{$type}' AS jenis, {$t['id']} AS id, {$t['nama']} AS nama,"
+            . " {$t['deskripsi']} AS deskripsi, {$t['foto']} AS foto FROM {$t['table']}";
     }
 }
-?>

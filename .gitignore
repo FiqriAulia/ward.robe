@@ -1,0 +1,7 @@
+# Kredensial lokal
+wardrobe/inc/config.local.php
+
+# Foto upload pengguna
+wardrobe/gambar/*
+!wardrobe/gambar/.htaccess
+!wardrobe/gambar/.gitkeep

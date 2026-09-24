@@ -1,66 +1,13 @@
 <?php
-include_once("../c_wardrobe.php");
+require __DIR__ . '/../inc/bootstrap.php';
 
 $controller = new c_wardrobe();
 $rows = $controller->getAllData();
+
+page_start();
+page_header('v_menu.php', 'Wardrobe');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wardrobe</title>
-    <link rel="stylesheet" href="../styles.css">
-    <script src="../jquery/jquery-3.7.1.min.js"></script>
-    <script src="../jquery/script.js"></script>
-</head>
-
-<body>
-<header class="header-container">
-        <form action="../v_menu.php" method="get" class="form-back">
-            <input class="back" type="submit" value="Back">
-        </form>
-        <h3>Wardrobe</h3>
-    </header>
     <div class="center">
-        <table>
-            <thead>
-                <tr>
-                    <th class="small">No</th>
-                    <th class="jenis">Jenis</th>
-                    <th>Nama</th>
-                    <th>Deskripsi</th>
-                    <th>Foto</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $no = 1;
-                foreach ($rows as $rowItem):
-                    ?>
-                    <tr>
-                        <td class="small">
-                            <?= $no ?>
-                        </td>
-                        <td class="jenis">
-                            <?= $rowItem['jenis'] ?>
-                        </td>
-                        <td>
-                            <?= $rowItem['nama'] ?>
-                        </td>
-                        <td>
-                            <?= $rowItem['deskripsi'] ?>
-                        </td>
-                        <td class="fotoble">
-                            <img class="foto" src="../gambar/<?=  $rowItem['foto'] ?>" alt="">
-                        </td>
-                    </tr>
-                    <?php $no += 1; ?>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <?php item_table($rows, ['empty' => 'Lemari masih kosong. Tambahkan pakaian lewat menu Input.']); ?>
     </div>
-</body>
-
-</html>
+<?php page_end(); ?>

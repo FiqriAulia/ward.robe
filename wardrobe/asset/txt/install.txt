@@ -1,6 +1,14 @@
 HALLO
 
-Jangan lupa install dulu dbnya dengan nama wardrobe
-dan check koneksi.php
+Cara install Wardrobe:
+
+1. Buat database kosong bernama "wardrobe" (misal lewat phpMyAdmin).
+2. Import DB/wardrobe.sql, lalu import DB/procedures.sql.
+   (Sudah punya database versi lama? Backup dulu, lalu import
+   DB/migrate_v2.sql dan DB/procedures.sql.)
+3. Salin inc/config.example.php menjadi inc/config.local.php,
+   lalu isi user & password MySQL-nya.
+4. Buka Wardrobe di browser. Saat pertama kali, kamu diminta
+   membuat password login.
 
 mantap

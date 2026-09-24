@@ -1,169 +1,32 @@
 <?php
-session_start();
-include_once("../c_wardrobe.php");
+require __DIR__ . '/../inc/bootstrap.php';
 
 $controller = new c_wardrobe();
-$baju = $controller->displayBaju();
-$celana = $controller->displayCelana();
-$aksesoris = $controller->displayAksesoris();
+$type = $controller->requireType($_GET['type'] ?? null);
+$label = c_wardrobe::label($type);
+$rows = $controller->getByType($type);
+
+page_start();
+page_header('main/v_sold.php', 'Sold');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wardrobe</title>
-    <link rel="stylesheet" href="../styles.css">
-    <script src="../jquery/jquery-3.7.1.min.js"></script>
-    <script src="../jquery/script.js"></script>
-</head>
-
-<body>
-    <header class="header-container">
-        <form action="../main/v_sold.php" method="get" class="form-back">
-            <input class="back" type="submit" value="Back">
-            </form>
-            <form action="process.php" method="post">
-            <h3>Sold</h3>
-    </header>
     <div class="center">
-        <div class="tengah">
+        <form class="tengah" action="<?= e(url('v_sold/process.php')) ?>" method="post"
+            data-confirm="Yakin? <?= e($label) ?> yang dipilih akan dihapus permanen beserta fotonya.">
+            <?= csrf_field() ?>
+            <input type="hidden" name="type" value="<?= e($type) ?>">
             <div class="header-container">
-                <h4>Pilih <?php echo $_POST['metode']?> mana yang di laundry</h4>
+                <h4>Pilih <?= e($label) ?> mana yang sudah dijual</h4>
             </div>
             <?php
-            if($_POST['metode'] == "Baju"){
-                $rows = $baju;
-                ?>
-                <table>
-                <thead>
-                    <tr>
-                        <th class="small"></th>
-                        <th class="small">No</th>
-                        <th>Nama</th>
-                        <th>Deskripsi</th>
-                        <th>Foto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $no = 1;
-                    foreach ($rows as $rowItem):
-                        ?>
-                        <tr>
-                            <td class="small">
-                                <input type="checkbox" name="input[]" value="<?= $rowItem['BAJU_ID'] ?>">
-                            </td>
-                            <td class="small">
-                                <?= $no ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['BAJU_NAMA'] ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['BAJU_DESKRIPSI'] ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['BAJU_FOTO'] ?>
-                            </td>
-                        </tr>
-                        <?php $no += 1; ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-                <?php
-            }
-            if($_POST['metode'] == "Celana"){
-                $rows = $celana;
-                ?>
-                <table>
-                <thead>
-                    <tr>
-                        <th class="small"></th>
-                        <th class="small">No</th>
-                        <th>Nama</th>
-                        <th>Deskripsi</th>
-                        <th>Foto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $no = 1;
-                    foreach ($rows as $rowItem):
-                        ?>
-                        <tr>
-                            <td class="small">
-                                <input type="checkbox" name="input[]" value="<?= $rowItem['CELANA_ID'] ?>">
-                            </td>
-                            <td class="small">
-                                <?= $no ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['CEL_NAMA'] ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['CEL_DESKRIPSI'] ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['CEL_FOTO'] ?>
-                            </td>
-                        </tr>
-                        <?php $no += 1; ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-                <?php
-            }
-            if($_POST['metode'] == "Aksesoris"){
-                $rows = $aksesoris;
-                ?>
-                <table>
-                <thead>
-                    <tr>
-                        <th class="small"></th>
-                        <th class="small">No</th>
-                        <th>Nama</th>
-                        <th>Deskripsi</th>
-                        <th>Foto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $no = 1;
-                    foreach ($rows as $rowItem):
-                        ?>
-                        <tr>
-                            <td class="small">
-                                <input type="checkbox" name="input[]" value="<?= $rowItem['AKSESORIS_ID'] ?>">
-                            </td>
-                            <td class="small">
-                                <?= $no ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['ACC_NAMA'] ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['ACC_DESKRIPSI'] ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['ACC_FOTO'] ?>
-                            </td>
-                        </tr>
-                        <?php $no += 1; ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-                <?php
-            }
+            item_table($rows, [
+                'jenis' => false,
+                'checkbox' => ['ids[]', fn(array $row) => (string) $row['id']],
+                'empty' => "Tidak ada $label.",
+            ]);
             ?>
             <div class="header-container">
-                <input type="hidden" name="metode" value="<?php echo $_POST['metode']?>">
-                <input type="submit" name="button" value="Sold ??" class="back" />
-                </form>
+                <input type="submit" value="Sold ??" class="back">
             </div>
-        </div>
+        </form>
     </div>
-</body>
-</html>
-
+<?php page_end(); ?>

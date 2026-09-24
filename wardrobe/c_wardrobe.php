@@ -1,134 +1,164 @@
 <?php
-include_once "m_wardrobe.php";
+// Controller: aturan bisnis di atas model (validasi jenis, upload foto, dll).
+
+require_once __DIR__ . '/m_wardrobe.php';
 
 class c_wardrobe
 {
-    private $model;
+    private m_wardrobe $model;
 
     public function __construct()
     {
         $this->model = new m_wardrobe();
     }
 
-    public function getAllData()
+    /** Jenis pakaian dari input user; 404 bila tidak dikenal. */
+    public function requireType(mixed $type): string
     {
-        $rows = $this->model->getAllData();
-        return $rows;
+        if (!is_string($type) || !isset(m_wardrobe::TYPES[$type])) {
+            not_found();
+        }
+        return $type;
     }
 
-    public function getAllLaundryData()
+    public static function label(string $type): string
     {
-        $rows = $this->model->getAllLaundryData();
-        return $rows;
+        return m_wardrobe::TYPES[$type]['label'] ?? $type;
     }
 
-    public function DressMe()
+    public function getAllData(): array
     {
-        $rows = $this->model->DressMe();
-        return $rows;
+        return $this->model->getAllData();
     }
 
-    public function displayCelana()
+    public function getByType(string $type): array
     {
-        $rows = $this->model->displayCelana();
-        return $rows;
+        return $this->model->getByType($type);
     }
 
-    public function displayBaju()
+    public function getAllLaundryData(): array
     {
-        $rows = $this->model->displayBaju();
-        return $rows;
+        return $this->model->getAllLaundryData();
     }
 
-    public function displayAksesoris()
+    public function getLaundryCandidates(): array
     {
-        $rows = $this->model->displayAksesoris();
-        return $rows;
+        return $this->model->getLaundryCandidates();
     }
 
-    public function insertCelana($CELANA_ID, $CEL_NAMA, $CEL_DESKRIPSI, $CEL_FOTO)
+    public function dressMe(): array
     {
-        $this->model->insertCelana($CELANA_ID, $CEL_NAMA, $CEL_DESKRIPSI, $CEL_FOTO);
+        return $this->model->dressMe();
     }
 
-    public function insertBaju($BAJU_ID, $BAJU_NAMA, $BAJU_DESKRIPSI, $BAJU_FOTO)
+    /** Pakaian berdasarkan jenis & id dari input user; 404 bila tidak ada. */
+    public function requireItem(string $type, mixed $id): array
     {
-        $this->model->insertBaju($BAJU_ID, $BAJU_NAMA, $BAJU_DESKRIPSI, $BAJU_FOTO);
+        $id = to_id($id);
+        $item = $id === null ? null : $this->model->find($type, $id);
+        if ($item === null) {
+            not_found();
+        }
+        return $item;
     }
 
-    public function insertAksesoris($AKSESORIS_ID, $ACC_NAMA, $ACC_DESKRIPSI, $ACC_FOTO)
+    /** Simpan pakaian baru. Foto yang sudah ter-upload dihapus lagi bila insert gagal. */
+    public function addItem(string $type, string $nama, string $deskripsi, array $file): void
     {
-        $this->model->insertAksesoris($AKSESORIS_ID, $ACC_NAMA, $ACC_DESKRIPSI, $ACC_FOTO);
-    }
-
-    public function insertIntoLaundry($LAUNDRY_ID, $BAJU_ID, $CELANA_ID)
-    {
-        $this->model->insertIntoLaundry($LAUNDRY_ID, $BAJU_ID, $CELANA_ID);
-    }
-
-    public function editCelana($CELANA_ID, $CEL_NAMA, $CEL_DESKRIPSI, $CEL_FOTO)
-    {
-        $this->model->editCelana($CELANA_ID, $CEL_NAMA, $CEL_DESKRIPSI, $CEL_FOTO);
-    }
-
-    public function editBaju($BAJU_ID, $BAJU_NAMA, $BAJU_DESKRIPSI, $BAJU_FOTO)
-    {
-        $this->model->editBaju($BAJU_ID, $BAJU_NAMA, $BAJU_DESKRIPSI, $BAJU_FOTO);
-    }
-
-    public function editAksesoris($AKSESORIS_ID, $ACC_NAMA, $ACC_DESKRIPSI, $ACC_FOTO)
-    {
-        $this->model->editAksesoris($AKSESORIS_ID, $ACC_NAMA, $ACC_DESKRIPSI, $ACC_FOTO);
-    }
-
-    public function deleteFromLaundry($LAUNDRY_ID)
-    {
-        $this->model->deleteFromLaundry($LAUNDRY_ID);
-    }
-
-    public function deleteFromBaju($BAJU_ID)
-    {
-        $this->model->deleteFromBaju($BAJU_ID);
-    }
-
-    public function deleteFromCelana($CELANA_ID)
-    {
-        $this->model->deleteFromCelana($CELANA_ID);
-    }
-
-    public function deleteFromAksesoris($AKSESORIS_ID)
-    {
-        $this->model->deleteFromAksesoris($AKSESORIS_ID);
-    }
-
-    public function getBajuById($BAJU_ID)
-    {
-        return $this->model->getBajuById($BAJU_ID);
-    }
-
-    public function getCelanaById($CELANA_ID)
-    {
-        return $this->model->getCelanaById($CELANA_ID);
-    }
-
-    public function getAccById($AKSESORIS_ID)
-    {
-        return $this->model->getAccById($AKSESORIS_ID);
-    }
-
-    public function getItemById($ITEM_ID, $itemType)
-    {
-        switch ($itemType) {
-            case 'BAJU':
-                return $this->getBajuById($ITEM_ID);
-            case 'CELANA':
-                return $this->getCelanaById($ITEM_ID);
-            case 'AKSESORIS':
-                return $this->getAccById($ITEM_ID);
-            default:
-                return null;
+        $foto = store_uploaded_image($file);
+        try {
+            $this->model->insert($type, $nama, $deskripsi, $foto);
+        } catch (Throwable $e) {
+            delete_image($foto);
+            throw $e;
         }
     }
 
+    /** Ubah pakaian. Foto baru opsional; foto lama baru dihapus setelah update berhasil. */
+    public function editItem(array $item, string $nama, string $deskripsi, ?array $file): void
+    {
+        $newFoto = null;
+        if ($file !== null && ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            $newFoto = store_uploaded_image($file);
+        }
+
+        try {
+            $this->model->update($item['jenis'], (int) $item['id'], $nama, $deskripsi, $newFoto ?? $item['foto']);
+        } catch (Throwable $e) {
+            if ($newFoto !== null) {
+                delete_image($newFoto);
+            }
+            throw $e;
+        }
+
+        if ($newFoto !== null) {
+            delete_image($item['foto']);
+        }
+    }
+
+    /** Jual (hapus) pakaian. Foto dihapus hanya setelah data di DB berhasil dihapus. */
+    public function sellItems(string $type, array $ids): int
+    {
+        $sold = 0;
+        foreach ($ids as $rawId) {
+            $id = to_id($rawId);
+            $item = $id === null ? null : $this->model->find($type, $id);
+            if ($item === null) {
+                continue;
+            }
+            $this->model->delete($type, $id);
+            delete_image($item['foto']);
+            $sold++;
+        }
+        return $sold;
+    }
+
+    /**
+     * Masukkan pakaian ke laundry. Setiap nilai berbentuk "jenis:id".
+     * @return int jumlah pakaian yang benar-benar ditambahkan.
+     */
+    public function addToLaundry(array $keys): int
+    {
+        $added = 0;
+        foreach ($keys as $key) {
+            [$type, $rawId] = array_pad(explode(':', $key, 2), 2, '');
+            $id = to_id($rawId);
+            if (!isset(m_wardrobe::TYPES[$type]) || $id === null) {
+                continue;
+            }
+            if ($this->model->addToLaundry($type, $id)) {
+                $added++;
+            }
+        }
+        return $added;
+    }
+
+    public function removeFromLaundry(array $laundryIds): int
+    {
+        $removed = 0;
+        foreach ($laundryIds as $rawId) {
+            $id = to_id($rawId);
+            if ($id !== null) {
+                $this->model->removeFromLaundry($id);
+                $removed++;
+            }
+        }
+        return $removed;
+    }
+
+    public function passwordHash(): ?string
+    {
+        return $this->model->getSetting('password_hash');
+    }
+
+    /** Set password pertama kali. @return bool false bila sudah pernah di-set. */
+    public function setInitialPassword(string $password): bool
+    {
+        return $this->model->addSettingIfMissing('password_hash', password_hash($password, PASSWORD_DEFAULT));
+    }
+
+    public function rehashPassword(string $password): void
+    {
+        $this->model->setSetting('password_hash', password_hash($password, PASSWORD_DEFAULT));
+    }
 }
-?>

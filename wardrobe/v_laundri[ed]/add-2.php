@@ -1,87 +1,37 @@
 <?php
-session_start();
-include_once("../c_wardrobe.php");
+// Langkah 2 dari 2: pilih celana & aksesoris, lalu simpan bersama baju dari langkah 1.
+require __DIR__ . '/../inc/bootstrap.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    redirect('v_laundri[ed]/add.php');
+}
 
 $controller = new c_wardrobe();
-$rows = $controller->displayCelana();
+$rows = array_values(array_filter($controller->getLaundryCandidates(), fn($row) => $row['jenis'] !== 'baju'));
+$selectedBaju = post_list('items');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['button']) && $_POST['button'] === 'add') {
-        if (isset($_POST['celana'])) {
-            $_SESSION['selected_celana'] = $_POST['celana'];
-        }
-        header("Location: process.php");
-        exit();
-    }
-}
+page_start();
+page_header('v_laundri[ed]/add.php', 'Laundri[ed]');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wardrobe</title>
-    <link rel="stylesheet" href="../styles.css">
-    <script src="../jquery/jquery-3.7.1.min.js"></script>
-    <script src="../jquery/script.js"></script>
-</head>
-
-<body>
-    <header class="header-container">
-        <form action="../v_laundri[ed].php" method="get" class="form-back">
-            <input class="back" type="submit" value="Back">
-            </form>
-            <h3>Laundri[ed]</h3>
-            <form action="" method="post">
-    </header>
     <div class="center">
-        <div class="tengah">
+        <form class="tengah" action="<?= e(url('v_laundri[ed]/process.php')) ?>" method="post">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="add">
+            <?php foreach ($selectedBaju as $key): ?>
+                <input type="hidden" name="items[]" value="<?= e($key) ?>">
+            <?php endforeach; ?>
             <div class="header-container">
-                <h4>Pilih Celana mana yang di laundry</h4>
+                <h4>Pilih Celana / Aksesoris mana yang di laundry (<?= count($selectedBaju) ?> baju dipilih)</h4>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th class="small"></th>
-                        <th class="small">No</th>
-                        <th>Nama</th>
-                        <th>Deskripsi</th>
-                        <th>Foto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $no = 1;
-                    foreach ($rows as $rowItem):
-                        ?>
-                        <tr>
-                            <td class="small">
-                                <input type="checkbox" name="celana[]" value="<?= $rowItem['CELANA_ID'] ?>">
-                            </td>
-                            <td class="small">
-                                <?= $no ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['CEL_NAMA'] ?>
-                            </td>
-                            <td>
-                                <?= $rowItem['CEL_DESKRIPSI'] ?>
-                            </td>
-                            <td class="fotoble">
-                            <img class="foto" src="../gambar/<?=  $rowItem['CEL_FOTO'] ?>" alt="">
-                        </td>
-                        </tr>
-                        <?php $no += 1; ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <?php
+            item_table($rows, [
+                'checkbox' => ['items[]', fn(array $row) => $row['jenis'] . ':' . $row['id']],
+                'empty' => 'Tidak ada celana atau aksesoris yang bisa dimasukkan ke laundry.',
+            ]);
+            ?>
             <div class="header-container">
-                <input type="submit" name="button" value="add" class="back" />
-                </form>
+                <input type="submit" value="Simpan" class="back">
             </div>
-        </div>
+        </form>
     </div>
-</body>
-
-</html>
+<?php page_end(); ?>

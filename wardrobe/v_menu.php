@@ -1,42 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
+<?php
+require __DIR__ . '/inc/bootstrap.php';
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wardrobe</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="jquery/jquery-3.7.1.min.js"></script>
-    <script src="jquery/script.js"></script>
-</head>
-
-<body>
-  <div class="center">
-    <div class="menukiri">
-      <h2 class="input">Input</h2>
-      <h2 class="londi">Laundri[ed]</h2>
-      <h2 class="edit">Edit</h2>
+page_start();
+?>
+    <form class="logout" action="<?= e(url('logout.php')) ?>" method="post">
+        <?= csrf_field() ?>
+        <input class="back" type="submit" value="Logout">
+    </form>
+    <div class="center">
+        <div class="menukiri">
+            <h2 class="input"><a href="<?= e(url('main/v_input.php')) ?>">Input</a></h2>
+            <h2 class="londi"><a href="<?= e(url('main/v_laundri[ed].php')) ?>">Laundri[ed]</a></h2>
+            <h2 class="edit"><a href="<?= e(url('main/v_edit.php')) ?>">Edit</a></h2>
+        </div>
+        <?php wizard_awake(); ?>
+        <div class="menukanan">
+            <h2 class="sold"><a href="<?= e(url('main/v_sold.php')) ?>">Sold</a></h2>
+            <h2 class="wardrobe"><a href="<?= e(url('main/v_wardrobe.php')) ?>">Wardrobe</a></h2>
+            <h2 class="dressme"><a href="<?= e(url('main/v_dress me.php')) ?>">Dress Me</a></h2>
+        </div>
     </div>
-    <div class="box"><!-- Wizart -->
-                <div class="wiz">
-                    <div class="overlap-group">
-                        <div class="rectangle"></div>
-                        <main>
-                            <img class="wake" id="anchor" src="asset/wake.png" />
-                            <div id="eyes">
-                                <img class="eye" src="asset/Mata.png" alt="mata" style="top: 240px;left: 35px;" />
-                                <img class="eye" src="asset/Mata.png" alt="mata" style="top: 240px;left: -52px;" />
-                            </div>
-                        </main>
-                    </div>
-                </div>
-            </div>
-    <div class="menukanan">
-      <h2 class="sold">Sold</h2>
-      <h2 class="wardrobe">Wardrobe</h2>
-      <h2 class="dressme">Dress Me</h2>
-    </div>
-  </div>
-</body>
-
-</html>
+<?php page_end(); ?>

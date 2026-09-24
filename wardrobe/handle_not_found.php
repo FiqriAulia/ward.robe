@@ -1,10 +1,9 @@
 <?php
-// Set 404 HTTP response status
+// Halaman 404; di-include oleh not_found() atau dibuka langsung.
 http_response_code(404);
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
@@ -31,10 +30,9 @@ http_response_code(404);
             user-select: none;
         }
 
-        /* Style untuk paragraf */
         p {
-            text-align: right; /* Membuat teks paragraf rata kiri */
-            margin-top: 10px; /* Jarak atas dari paragraf */
+            text-align: right;
+            margin-top: 10px;
         }
     </style>
 </head>

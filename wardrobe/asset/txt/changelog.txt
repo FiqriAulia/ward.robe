@@ -1,0 +1,102 @@
+                Version : 2.0.000
+
+
+                
+                
+MWL : Fiqri
+
+Update log:
+1.0.000
+Alhamdulillah work
+
+1.1.000
+File Handling fixing
+
+1.2.000
+DressMe Finally working
+fix displaying foto instead of the image
+fix when image dont have any picture it will hidden away
+LAUNCH!!!!!!!!!
+
+1.2.010
+Fix when input the ginormous number on nomor input
+
+2.0.000
+Security fixes (login, upload, XSS, CSRF)
+Nomor sekarang otomatis
+Laundry bisa aksesoris, DressMe skip yang lagi di laundry
+Semua link & redirect beres
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  .-"""-.
+ /      o\
+|    o   0).-.
+|       .-;(_/     .-.
+ \     /  /)).---._|  `\   ,
+  '.  '  /((       `'-./ _/|
+    \  .'  )        .-.;`  /
+     '.             |  `\-'
+       '._        -'    /
+ fqr      ``""--`------`
