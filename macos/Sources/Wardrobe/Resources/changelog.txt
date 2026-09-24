@@ -1,0 +1,101 @@
+                Version : 1.1.000
+
+
+                
+                
+MWL : Fiqri
+
+Update log:
+1.0.000
+Alhamdulillah work
+
+1.1.000
+File Handling fixing
+
+1.2.000
+DressMe Finally working
+fix displaying foto instead of the image
+fix when image dont have any picture it will hidden away
+LAUNCH!!!!!!!!!
+
+1.2.010
+Fix when input the ginormous number on nomor input
+
+macOS 0.1.0
+Wardrobe pindah ke Mac (SwiftUI)
+Mata wizard masih ngikutin kursor
+Laundry bisa aksesoris, DressMe skip yang lagi di laundry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  .-"""-.
+ /      o\
+|    o   0).-.
+|       .-;(_/     .-.
+ \     /  /)).---._|  `\   ,
+  '.  '  /((       `'-./ _/|
+    \  .'  )        .-.;`  /
+     '.             |  `\-'
+       '._        -'    /
+ fqr      ``""--`------`

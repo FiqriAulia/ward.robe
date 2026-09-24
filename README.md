@@ -5,6 +5,10 @@ With ward.robe, users can upload, store, and categorize all their clothing items
 
 Not only that, but users can also note additional details such as size, brand, and specific notes for each clothing item. ward.robe is designed to help reduce confusion in choosing daily clothing, optimize the use of clothing collections, and bring joy to the dressing process.
 
+## macOS App
+
+A native macOS version (SwiftUI, no server needed) lives in [`macos/`](macos/README.md).
+
 ## Features
 
 Upon entering the landing page, users will be greeted by a sleeping wizard. When awakened, users will be presented with six menus that encapsulate basic features within the database (CRUD): input menu, laundry, edit, sold, wardrobe, and dressme.
