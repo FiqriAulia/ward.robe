@@ -1,4 +1,5 @@
 import AppKit
+import SwiftData
 import SwiftUI
 import WardrobeCore
 
@@ -22,10 +23,10 @@ struct Thumbnail: View {
 /// Tabel pakaian dengan multi-select (klik, ⌘-klik, ⇧-klik).
 struct ClothingTable: View {
     let items: [Clothing]
-    @Binding var selection: Set<Clothing.ID>
+    @Binding var selection: Set<PersistentIdentifier>
     let emptyMessage: String
     /// Dipanggil saat baris diklik dua kali / Enter.
-    var onOpen: ((Set<Clothing.ID>) -> Void)?
+    var onOpen: ((Set<PersistentIdentifier>) -> Void)?
 
     var body: some View {
         Table(items, selection: $selection) {
@@ -49,7 +50,7 @@ struct ClothingTable: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .contextMenu(forSelectionType: Clothing.ID.self) { _ in
+        .contextMenu(forSelectionType: PersistentIdentifier.self) { _ in
             EmptyView()
         } primaryAction: { ids in
             onOpen?(ids)

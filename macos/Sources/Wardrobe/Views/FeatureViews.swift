@@ -46,7 +46,7 @@ struct WardrobeView: View {
 struct EditView: View {
     @Environment(FlashCenter.self) private var flash
     @Query(sort: clothingSort) private var items: [Clothing]
-    @State private var selection = Set<Clothing.ID>()
+    @State private var selection = Set<PersistentIdentifier>()
     @State private var editing: Clothing?
 
     var body: some View {
@@ -77,7 +77,7 @@ struct EditView: View {
         }
     }
 
-    private func edit(_ ids: Set<Clothing.ID>) {
+    private func edit(_ ids: Set<PersistentIdentifier>) {
         guard ids.count == 1, let id = ids.first else { return }
         editing = items.first { $0.id == id }
     }
@@ -88,7 +88,7 @@ struct LaundryView: View {
     @Environment(\.modelContext) private var context
     @Environment(FlashCenter.self) private var flash
     @Query(sort: clothingSort) private var items: [Clothing]
-    @State private var selection = Set<Clothing.ID>()
+    @State private var selection = Set<PersistentIdentifier>()
     @State private var showAdd = false
 
     private var inLaundry: [Clothing] { items.filter(\.isInLaundry) }
@@ -133,7 +133,7 @@ struct AddToLaundrySheet: View {
     @Environment(FlashCenter.self) private var flash
 
     let candidates: [Clothing]
-    @State private var selection = Set<Clothing.ID>()
+    @State private var selection = Set<PersistentIdentifier>()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -176,7 +176,7 @@ struct SoldView: View {
     @Environment(FlashCenter.self) private var flash
     @Query(sort: clothingSort) private var items: [Clothing]
     @State private var kind: ClothingKind = .baju
-    @State private var selection = Set<Clothing.ID>()
+    @State private var selection = Set<PersistentIdentifier>()
     @State private var confirming = false
 
     private var ofKind: [Clothing] { items.filter { $0.kind == kind } }
